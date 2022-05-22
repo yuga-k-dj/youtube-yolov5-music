@@ -77,6 +77,7 @@ def run(
         person_count = 0,
         car_count = 0,
         motorcycle_count = 0,
+        traffic_light_count = 0,
 ):
     source = str(source)
     save_img = not nosave and not source.endswith('.txt')  # save inference images
@@ -174,29 +175,29 @@ def run(
                         if save_crop:
                             save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
                     # print(label) # me added
+                    if label == 'traffic light':
+                        traffic_light_count += 1
+
                     if label == 'person':
                         person_count += 1
                         if person_count % 100 == 0:
-                            send_msg = 'drum_remade' # このsend_msgとperson_countを送信
-                            # person_countそのまま送るのはつまらないからbus_countとか他の物体検知の数値を四則演算して送る方が面白そう
-                            # あるいはカウントが4番目に多い物体の数値を使う。e.g.)1番目→drum, 2番目→bass, ... 4番目→演算用
-                            print(person_count)
-                            print(send_msg)
+                            use_person_num = person_count - traffic_light_count
+                            print('person=' + str(person_count))
+                            print(use_person_num) # <-- send this to MusicVAE
 
                     if label == 'car':
                         car_count += 1
                         if car_count % 100 == 0:
-                            send_msg = 'bass_remade' # このsend_msgとcar_countを送信
-                            print(car_count)
-                            print(send_msg)
+                            use_car_num = car_count - traffic_light_count
+                            print('car=' + str(car_count))
+                            print(use_car_num) # <-- send this to MusicVAE
 
                     if label == 'motorcycle':
                         motorcycle_count += 1
                         if motorcycle_count % 10 == 0:
-                            send_msg = 'melody_remade' # このsend_msgとmotorcycle_countを送信
-                            print(motorcycle_count)
-                            print(send_msg)
-
+                            use_motorcycle_num = motorcycle_count + traffic_light_count
+                            print('motorcycle=' + str(motorcycle_count))
+                            print(use_motorcycle_num) # <-- send this to MusicVAE
 
             # Stream results
             im0 = annotator.result()
