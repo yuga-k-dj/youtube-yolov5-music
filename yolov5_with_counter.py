@@ -25,12 +25,15 @@ Usage - formats:
 """
 
 import argparse
+from ipaddress import ip_address
 import os
 import sys
 from pathlib import Path
 
 import torch
 import torch.backends.cudnn as cudnn
+
+import socket
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
@@ -44,6 +47,17 @@ from utils.general import (LOGGER, check_file, check_img_size, check_imshow, che
                            increment_path, non_max_suppression, print_args, scale_coords, strip_optimizer, xyxy2xywh)
 from utils.plots import Annotator, colors, save_one_box
 from utils.torch_utils import select_device, time_sync
+
+
+ip_address = '127.0.0.1'
+port = 7010
+buffer_size = 4092
+
+def socket_send(message):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((ip_address, port))
+    s.send(message.encode('utf-8'))
+    s.close()
 
 
 @torch.no_grad()
@@ -183,6 +197,7 @@ def run(
                         if person_count % 100 == 0:
                             use_person_num = person_count - traffic_light_count
                             print('person=' + str(person_count))
+                            socket_send(use_person_num)
                             print(use_person_num) # <-- send this to MusicVAE
 
                     if label == 'car':
@@ -190,6 +205,7 @@ def run(
                         if car_count % 100 == 0:
                             use_car_num = car_count - traffic_light_count
                             print('car=' + str(car_count))
+                            socket_send(use_car_num)
                             print(use_car_num) # <-- send this to MusicVAE
 
                     if label == 'motorcycle':
@@ -197,6 +213,7 @@ def run(
                         if motorcycle_count % 10 == 0:
                             use_motorcycle_num = motorcycle_count + traffic_light_count
                             print('motorcycle=' + str(motorcycle_count))
+                            socket_send(use_motorcycle_num)
                             print(use_motorcycle_num) # <-- send this to MusicVAE
 
             # Stream results
