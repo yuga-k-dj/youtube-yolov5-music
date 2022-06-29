@@ -60,11 +60,8 @@ def socket_send(message):
     clientsocket, address = s.accept()
     print(f"Connection from {address} has been established!")
     clientsocket.send(bytes(str(message), 'utf-8'))
+    # clientsocket.send(str(message), 'utf-8')
     clientsocket.close()
-    # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # s.connect((ip_address, port))
-    # s.send(str(message).encode('utf-8'))
-    # s.close()
 
 
 @torch.no_grad()

@@ -169,6 +169,7 @@ def run(config_map, recv_msg): #def run(config_map)
   Raises:
     ValueError: if required flags are missing or invalid.
   """
+  print(recv_msg)
   date_and_time = time.strftime('%Y-%m-%d_%H%M%S')
 
   if FLAGS.run_dir is None == checkpoint_file is None:
@@ -266,13 +267,17 @@ def run(config_map, recv_msg): #def run(config_map)
 
 
 def socket_receive():
+    # received message must be fixed (now the type may be byte. e.g. b'74')
     while True:
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((socket.gethostname(), 7010))
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             msg = s.recv(1024)
-            print('Got Message =' + str(msg))
+            print('Original Message =' + str(msg))
+            numbered_msg = int.from_bytes(msg, byteorder='big')
+            # numbered_msg = int(msg)
+            print('Got Message =' + str(numbered_msg))
             run(CONFIG_MAP, msg)
   
         except ConnectionRefusedError:
