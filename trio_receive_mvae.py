@@ -224,7 +224,8 @@ def run(config_map, recv_msg): #def run(config_map)
         for i, ns in enumerate(config.data_converter.from_tensors(tensors)):
           note_seq.sequence_proto_to_midi_file(
               # ns, basename.replace('*', '%03d' % i))
-              ns, output_dir + 'shibuya' + str(i))
+              # ns, output_dir + 'shibuya' + str(i) + str(recv_msg) + '.mid')
+              ns, output_dir + 'shibuya' + str(i) + '.mid')
         # print(
         #     '%d valid inputs extracted from `%s`. Outputting these potential '
         #     'inputs as `%s`. Call script again with one of these instead.' %
@@ -270,7 +271,8 @@ def run(config_map, recv_msg): #def run(config_map)
   # logging.info('Outputting %d files as `%s`...', num_outputs, basename)
   for i, ns in enumerate(results):
     # note_seq.sequence_proto_to_midi_file(ns, basename.replace('*', '%03d' % i))
-    note_seq.sequence_proto_to_midi_file(ns, output_dir + 'shibuya' + str(i))
+    # note_seq.sequence_proto_to_midi_file(ns, output_dir + 'shibuya' + str(i) + str(recv_msg) + '.mid')
+    note_seq.sequence_proto_to_midi_file(ns, output_dir + 'shibuya' + str(i) + '.mid')
 
   logging.info('Done.')
 
