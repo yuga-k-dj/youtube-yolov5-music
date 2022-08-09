@@ -40,6 +40,12 @@ from magenta.contrib import training as contrib_training
 from magenta.models.music_vae import data
 from magenta.models.music_vae import data_hierarchical
 
+from collections import defaultdict
+from note_seq.midi_io import midi_file_to_note_sequence
+
+from pythonosc import udp_client
+from pythonosc.osc_message_builder import OscMessageBuilder
+
 
 HParams = contrib_training.HParams
 
@@ -67,6 +73,77 @@ def update_config(config, update_dict):
   config_dict.update(update_dict)
   return Config(**config_dict)
 
+def note_sequence_to_tokens(seq) -> str:
+    """ `note_sequence_to_tokens_for_M4L` converts magenta NoteSequence data
+    to a single string. The string data (Token) is the sequence of chunk which
+    represents single Note with 4 numbers formatted as below
+
+    pitch[int] velocity[int] start_time(sec)[float] end_time(sec)[float],...,
+
+    Args:
+        seq (NoteSequence): single track NoteSequence instance
+
+    Returns:
+        str: Token
+    """
+    output_data1 = ""
+    output_data2 = ""
+    output_data3 = ""
+
+    maped_output1 = None
+    maped_output2 = None
+    maped_output3 = None
+
+    output_midi1 = defaultdict(list)
+    output_midi2 = defaultdict(list)
+    output_midi3 = defaultdict(list)
+
+    for seq_note in seq.notes:
+        
+        if seq_note.instrument == 0:    
+            start_time = seq_note.start_time * 1000
+            end_time = seq_note.end_time * 1000
+            output_midi1['notes'].append([seq_note.pitch, seq_note.velocity, '{:.2f}'.format(
+                start_time), '{:.2f}'.format(end_time)])
+            maped_output1 = map(
+                str, sum(output_midi1['notes'], []))
+            output_data1 = ' '.join(maped_output1)
+
+        elif seq_note.instrument == 1:    
+            start_time = seq_note.start_time * 1000
+            end_time = seq_note.end_time * 1000
+            output_midi2['notes'].append([seq_note.pitch, seq_note.velocity, '{:.2f}'.format(
+                start_time), '{:.2f}'.format(end_time)])
+            maped_output2 = map(
+                str, sum(output_midi2['notes'], []))
+            output_data2 = ' '.join(maped_output2)
+
+        elif seq_note.instrument == 2:  
+            start_time = seq_note.start_time * 1000
+            end_time = seq_note.end_time * 1000
+            output_midi3['notes'].append([seq_note.pitch, seq_note.velocity, '{:.2f}'.format(
+                start_time), '{:.2f}'.format(end_time)])
+            maped_output3 = map(
+                str, sum(output_midi3['notes'], []))
+            output_data3 = ' '.join(maped_output3)
+
+    client = udp_client.UDPClient('127.0.0.1', 8000)
+
+    msg1 = OscMessageBuilder(address="/track1")
+    msg1.add_arg(output_data1)
+    m1 = msg1.build()
+
+    msg2 = OscMessageBuilder(address="/track2")
+    msg2.add_arg(output_data2)
+    m2 = msg2.build()
+
+    msg3 = OscMessageBuilder(address="/track3")
+    msg3.add_arg(output_data3)
+    m3 = msg3.build()
+
+    client.send(m1)
+    client.send(m2)
+    client.send(m3)
 
 CONFIG_MAP = {}
 
@@ -273,6 +350,8 @@ def run(config_map, recv_msg): #def run(config_map)
     # note_seq.sequence_proto_to_midi_file(ns, basename.replace('*', '%03d' % i))
     # note_seq.sequence_proto_to_midi_file(ns, output_dir + 'shibuya' + str(i) + str(recv_msg) + '.mid')
     note_seq.sequence_proto_to_midi_file(ns, output_dir + 'shibuya' + str(i) + '.mid')
+
+  note_sequence_to_tokens(midi)
 
   logging.info('Done.')
 
