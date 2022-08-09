@@ -292,7 +292,7 @@ def run(
                             print('person=' + str(person_count))
                             if use_person_num < 0:
                                 use_person_num = 1
-                            # socket_send(use_person_num)
+                            socket_send(use_person_num)
                             print(use_person_num) # <-- send this to MusicVAE
 
                     # if label == 'car':
